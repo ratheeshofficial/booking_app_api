@@ -30,7 +30,7 @@ mongoose.connection.on("connected", () => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Backend");
+  res.send("Backend started");
 });
 
 // middleware
