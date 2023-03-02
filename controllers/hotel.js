@@ -46,13 +46,21 @@ export const getHotel = async (req, res) => {
 export const getHotels = async (req, res) => {
   // console.log("Hotel.count", Hotel.count());
   const { min, max, ...other } = req.query;
+  console.log("req.params", { ...other });
   // console.log("other", other);
   try {
-    const hotels = await Hotel.find({
-      ...other,
-      cheapestPrice: { $gt: min || 1, $lt: max || 100000 }, //gt = greatest,  lt = lowest
-    }).limit(req.query.limit);
-    res.status(200).json(hotels);
+    if (req.query.featured) {
+      const hotels = await Hotel.find({
+        cheapestPrice: { $gt: min || 1, $lt: max || 100000 }, //gt = greatest,  lt = lowest
+      }).limit(req.query.limit);
+      res.status(200).json(hotels);
+    } else {
+      const hotels = await Hotel.find({
+        ...other,
+        cheapestPrice: { $gt: min || 1, $lt: max || 100000 }, //gt = greatest,  lt = lowest
+      }).limit(req.query.limit);
+      res.status(200).json(hotels);
+    }
   } catch (error) {
     res.status(500).json(error);
   }
@@ -60,6 +68,7 @@ export const getHotels = async (req, res) => {
 
 export const countByCity = async (req, res) => {
   const cities = req.query.cities.split(",");
+  console.log("cities", cities);
   try {
     const list = await Promise.all(
       cities.map((city) => {
@@ -108,13 +117,13 @@ export const countByType = async (req, res) => {
 
 export const getHotelRooms = async (req, res) => {
   try {
-    const hotel = await Hotel.findById(req.params.id);
-    const list = await Promise.all(
-      hotel.rooms.map((room) => {
-        return Room.findById(room);
-      })
-    );
-    res.status(200).json(list);
+    const hotel = await Hotel.findById(req.params.hotelId);
+
+    // console.log("hotel", hotel);
+
+    const rooms = await Room.find({ _id: { $in: hotel.rooms } });
+    console.log("rooms", rooms);
+    res.status(200).json(rooms);
   } catch (error) {
     res.status(404).send(error);
   }
